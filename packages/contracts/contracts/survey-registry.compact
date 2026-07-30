@@ -1,0 +1,175 @@
+// Survey Registry Compact Contract
+// Manages survey lifecycle: create, update, publish, close, archive
+
+contract SurveyRegistry {
+    // State
+    surveys: Map<surveyId: String, Survey>
+    owner: Address
+    
+    // Survey record structure
+    record Survey {
+        id: String,
+        title: String,
+        description: String?,
+        questionsHash: String,
+        settingsHash: String,
+        status: SurveyStatus,
+        version: Uint,
+        responseCount: Uint,
+        owner: Address,
+        createdAt: Timestamp,
+        updatedAt: Timestamp,
+        publishedAt: Timestamp?,
+        closedAt: Timestamp?
+    }
+    
+    enum SurveyStatus {
+        Draft,
+        Published,
+        Closed,
+        Archived
+    }
+    
+    // Contract creation
+    pub constructor(initialOwner: Address) {
+        owner = initialOwner
+    }
+    
+    // Create a new survey
+    pub createSurvey(
+        surveyId: String,
+        title: String,
+        description: String?,
+        questionsHash: String,
+        settingsHash: String
+    ) -> Survey {
+        require(owner == caller())
+        require(!surveys.contains(surveyId))
+        
+        let survey = Survey {
+            id: surveyId,
+            title: title,
+            description: description,
+            questionsHash: questionsHash,
+            settingsHash: settingsHash,
+            status: SurveyStatus::Draft,
+            version: 1,
+            responseCount: 0,
+            owner: caller(),
+            createdAt: now(),
+            updatedAt: now(),
+            publishedAt: None,
+            closedAt: None
+        }
+        
+        surveys.insert(surveyId, survey)
+        return survey
+    }
+    
+    // Update an existing survey (increases version)
+    pub updateSurvey(
+        surveyId: String,
+        title: String,
+        description: String?,
+        questionsHash: String,
+        settingsHash: String
+    ) -> Survey {
+        require(surveys.contains(surveyId))
+        require(surveys[surveyId].owner == caller())
+        require(surveys[surveyId].status == SurveyStatus::Draft)
+        
+        let survey = surveys[surveyId]
+        survey.title = title
+        survey.description = description
+        survey.questionsHash = questionsHash
+        survey.settingsHash = settingsHash
+        survey.version = survey.version + 1
+        survey.updatedAt = now()
+        
+        surveys.insert(surveyId, survey)
+        return survey
+    }
+    
+    // Publish a survey (change from Draft to Published)
+    pub publishSurvey(surveyId: String) -> Survey {
+        require(surveys.contains(surveyId))
+        require(surveys[surveyId].owner == caller())
+        require(surveys[surveyId].status == SurveyStatus::Draft)
+        
+        let survey = surveys[surveyId]
+        survey.status = SurveyStatus::Published
+        survey.publishedAt = Some(now())
+        survey.updatedAt = now()
+        
+        surveys.insert(surveyId, survey)
+        return survey
+    }
+    
+    // Close a survey (prevent new responses)
+    pub closeSurvey(surveyId: String) -> Survey {
+        require(surveys.contains(surveyId))
+        require(surveys[surveyId].owner == caller())
+        require(surveys[surveyId].status == SurveyStatus::Published)
+        
+        let survey = surveys[surveyId]
+        survey.status = SurveyStatus::Closed
+        survey.closedAt = Some(now())
+        survey.updatedAt = now()
+        
+        surveys.insert(surveyId, survey)
+        return survey
+    }
+    
+    // Archive a survey
+    pub archiveSurvey(surveyId: String) -> Survey {
+        require(surveys.contains(surveyId))
+        require(surveys[surveyId].owner == caller())
+        
+        let survey = surveys[surveyId]
+        survey.status = SurveyStatus::Archived
+        survey.updatedAt = now()
+        
+        surveys.insert(surveyId, survey)
+        return survey
+    }
+    
+    // Get survey by id
+    pub getSurvey(surveyId: String) -> Survey? {
+        require(surveys.contains(surveyId))
+        return Some(surveys[surveyId])
+    }
+    
+    // Increment response count
+    pub incrementResponseCount(surveyId: String) -> Uint {
+        require(surveys.contains(surveyId))
+        require(surveys[surveyId].status == SurveyStatus::Published)
+        
+        let survey = surveys[surveyId]
+        survey.responseCount = survey.responseCount + 1
+        surveys.insert(surveyId, survey)
+        
+        return survey.responseCount
+    }
+    
+    // Get response count
+    pub getResponseCount(surveyId: String) -> Uint {
+        require(surveys.contains(surveyId))
+        return surveys[surveyId].responseCount
+    }
+    
+    // Check if survey is accepting responses
+    pub isAcceptingResponses(surveyId: String) -> Bool {
+        if !surveys.contains(surveyId) {
+            return false
+        }
+        return surveys[surveyId].status == SurveyStatus::Published
+    }
+    
+    // Verify ownership
+    pub verifyOwnership(surveyId: String, address: Address) -> Bool {
+        if !surveys.contains(surveyId) {
+            return false
+        }
+        return surveys[surveyId].owner == address
+    }
+}

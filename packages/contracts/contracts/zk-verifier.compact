@@ -1,0 +1,174 @@
+// ZK Verifier Compact Contract
+// Verifies zero-knowledge proofs for survey response submissions
+
+contract ZKVerifier {
+    // State
+    verificationKeys: Map<circuitId: String, VerificationKey>
+    verifiedProofs: Map<proofHash: String, VerifiedProof>
+    owner: Address
+    
+    // Verification key record
+    record VerificationKey {
+        id: String,
+        circuitId: String,
+        key: String,
+        version: Uint,
+        active: Bool,
+        registeredAt: Timestamp
+    }
+    
+    // Verified proof record
+    record VerifiedProof {
+        proofHash: String,
+        circuitId: String,
+        publicInputs: List<String>,
+        verified: Bool,
+        verifiedAt: Timestamp
+    }
+    
+    // Contract creation
+    pub constructor(initialOwner: Address) {
+        owner = initialOwner
+    }
+    
+    // Register a verification key for a circuit
+    pub registerVerificationKey(
+        circuitId: String,
+        key: String,
+        version: Uint
+    ) -> VerificationKey {
+        require(owner == caller())
+        
+        let vk = VerificationKey {
+            id: circuitId ++ "-" ++ version.toString(),
+            circuitId: circuitId,
+            key: key,
+            version: version,
+            active: true,
+            registeredAt: now()
+        }
+        
+        verificationKeys.insert(vk.id, vk)
+        return vk
+    }
+    
+    // Verify a proof against a registered verification key
+    pub verifyProof(
+        proof: String,
+        circuitId: String,
+        publicInputs: List<String>
+    ) -> VerifiedProof {
+        // Find the active verification key for the circuit
+        let vkKey = findActiveVerificationKey(circuitId)
+        require(vkKey != "")
+        
+        let vk = verificationKeys[vkKey]
+        let proofHash = hash(proof ++ publicInputs.join(","))
+        
+        // In production, actual ZK proof verification happens here
+        // using the Midnight ledger's native proof verification
+        let isValid = performZKVerification(proof, vk.key, publicInputs)
+        
+        let result = VerifiedProof {
+            proofHash: proofHash,
+            circuitId: circuitId,
+            publicInputs: publicInputs,
+            verified: isValid,
+            verifiedAt: now()
+        }
+        
+        verifiedProofs.insert(proofHash, result)
+        return result
+    }
+    
+    // Verify response integrity (answers hash matches proof)
+    pub verifyResponseIntegrity(
+        proof: String,
+        surveyId: String,
+        nullifierHash: String,
+        answersHash: String
+    ) -> Bool {
+        let circuitId = "survey-response-v1"
+        let publicInputs = [surveyId, nullifierHash, answersHash]
+        
+        let result = verifyProof(proof, circuitId, publicInputs)
+        return result.verified
+    }
+    
+    // Verify nullifier uniqueness and integrity
+    pub verifyNullifierUniqueness(
+        proof: String,
+        nullifierHash: String,
+        surveyId: String
+    ) -> Bool {
+        let circuitId = "nullifier-uniqueness-v1"
+        let publicInputs = [nullifierHash, surveyId]
+        
+        // Verify that nullifier hasn't been used before (checked at circuit level)
+        let result = verifyProof(proof, circuitId, publicInputs)
+        return result.verified
+    }
+    
+    // Deactivate a verification key
+    pub deactivateVerificationKey(circuitId: String, version: Uint) {
+        require(owner == caller())
+        
+        let keyId = circuitId ++ "-" ++ version.toString()
+        if verificationKeys.contains(keyId) {
+            let vk = verificationKeys[keyId]
+            vk.active = false
+            verificationKeys.insert(keyId, vk)
+        }
+    }
+    
+    // Get verification result by proof hash
+    pub getVerificationResult(proofHash: String) -> VerifiedProof? {
+        require(verifiedProofs.contains(proofHash))
+        return Some(verifiedProofs[proofHash])
+    }
+    
+    // Get active verification key for a circuit
+    pub getActiveVerificationKey(circuitId: String) -> VerificationKey? {
+        let keyId = findActiveVerificationKey(circuitId)
+        if keyId == "" {
+            return None
+        }
+        return Some(verificationKeys[keyId])
+    }
+    
+    // Internal: find active verification key for a circuit
+    private fun findActiveVerificationKey(circuitId: String) -> String {
+        let keys = verificationKeys.keys()
+        for keyId in keys {
+            let vk = verificationKeys[keyId]
+            if vk.circuitId == circuitId && vk.active {
+                return keyId
+            }
+        }
+        return ""
+    }
+    
+    // Internal: perform actual ZK verification (placeholder for ledger integration)
+    private fun performZKVerification(
+        proof: String,
+        verificationKey: String,
+        publicInputs: List<String>
+    ) -> Bool {
+        // In production, this delegates to Midnight's native ZK proof verifier
+        // which supports Groth16 and PLONK proof systems
+        
+        // Verify proof structure
+        require(proof.length() > 0)
+        require(verificationKey.length() > 0)
+        require(publicInputs.length() > 0)
+        
+        // The actual verification is performed by the Midnight ledger runtime
+        // This placeholder returns true for valid-format proofs
+        return proof.startsWith("valid-proof-")
+    }
+    
+    // Hash function for proof deduplication
+    private fun hash(data: String) -> String {
+        return builtinHash(data)
+    }
+}

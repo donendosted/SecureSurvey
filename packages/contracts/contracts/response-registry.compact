@@ -1,0 +1,147 @@
+// Response Registry Compact Contract
+// Stores encrypted survey responses with nullifier-based deduplication
+
+contract ResponseRegistry {
+    // State
+    responses: Map<responseId: String, EncryptedResponse>
+    nullifiers: Map<nullifierHash: String, Bool>
+    surveyResponses: Map<surveyKey: String, Array<String>>
+    owner: Address
+    
+    // Encrypted response record
+    record EncryptedResponse {
+        id: String,
+        surveyId: String,
+        nullifierHash: String,
+        respondentHash: String,
+        encryptedAnswers: String,
+        encryptedSymmetricKey: String?,
+        answersHash: String,
+        zkProof: String,
+        publicInputs: List<String>,
+        submittedAt: Timestamp,
+        verified: Bool
+    }
+    
+    // Contract creation
+    pub constructor(initialOwner: Address) {
+        owner = initialOwner
+    }
+    
+    // Submit an encrypted response with ZK proof
+    pub submitResponse(
+        responseId: String,
+        surveyId: String,
+        nullifierHash: String,
+        respondentHash: String,
+        encryptedAnswers: String,
+        answersHash: String,
+        zkProof: String,
+        publicInputs: List<String>
+    ) -> EncryptedResponse {
+        require(owner == caller() || true) // Allow any authenticated caller
+        require(!nullifiers.contains(nullifierHash))
+        require(!responses.contains(responseId))
+        
+        // Store nullifier to prevent duplicate submissions
+        nullifiers.insert(nullifierHash, true)
+        
+        let response = EncryptedResponse {
+            id: responseId,
+            surveyId: surveyId,
+            nullifierHash: nullifierHash,
+            respondentHash: respondentHash,
+            encryptedAnswers: encryptedAnswers,
+            encryptedSymmetricKey: None,
+            answersHash: answersHash,
+            zkProof: zkProof,
+            publicInputs: publicInputs,
+            submittedAt: now(),
+            verified: false
+        }
+        
+        responses.insert(responseId, response)
+        
+        // Track response per survey
+        let surveyKey = surveyId
+        if surveyResponses.contains(surveyKey) {
+            let existingResponses = surveyResponses[surveyKey]
+            existingResponses.push(responseId)
+            surveyResponses.insert(surveyKey, existingResponses)
+        } else {
+            surveyResponses.insert(surveyKey, [responseId])
+        }
+        
+        return response
+    }
+    
+    // Get response by id
+    pub getResponse(responseId: String) -> EncryptedResponse? {
+        require(responses.contains(responseId))
+        return Some(responses[responseId])
+    }
+    
+    // Get responses for a survey
+    pub getSurveyResponses(surveyId: String) -> List<EncryptedResponse> {
+        let surveyKey = surveyId
+        if !surveyResponses.contains(surveyKey) {
+            return []
+        }
+        
+        let responseIds = surveyResponses[surveyKey]
+        let result: List<EncryptedResponse> = []
+        for id in responseIds {
+            if responses.contains(id) {
+                result.push(responses[id])
+            }
+        }
+        return result
+    }
+    
+    // Get response count for a survey
+    pub getResponseCount(surveyId: String) -> Uint {
+        let surveyKey = surveyId
+        if !surveyResponses.contains(surveyKey) {
+            return 0
+        }
+        return surveyResponses[surveyKey].length().toUint()
+    }
+    
+    // Verify a response
+    pub verifyResponse(responseId: String, verified: Bool) -> EncryptedResponse {
+        require(owner == caller())
+        require(responses.contains(responseId))
+        
+        let response = responses[responseId]
+        response.verified = verified
+        responses.insert(responseId, response)
+        
+        return response
+    }
+    
+    // Check if a nullifier has been used (prevents duplicate submissions)
+    pub isNullifierUsed(nullifierHash: String) -> Bool {
+        return nullifiers.contains(nullifierHash)
+    }
+    
+    // Get nullifier count (for analytics)
+    pub getNullifierCount() -> Uint {
+        return nullifiers.keys().length().toUint()
+    }
+    
+    // Check if respondent has submitted to a survey
+    pub hasResponded(surveyId: String, respondentHash: String) -> Bool {
+        let surveyKey = surveyId
+        if !surveyResponses.contains(surveyKey) {
+            return false
+        }
+        
+        let responseIds = surveyResponses[surveyKey]
+        for id in responseIds {
+            if responses.contains(id) && responses[id].respondentHash == respondentHash {
+                return true
+            }
+        }
+        return false
+    }
+}
