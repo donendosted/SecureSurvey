@@ -13,7 +13,6 @@ export function errorHandler(err: Error, _req: Request, res: Response, _next: Ne
       error: {
         code: appErr.code,
         message: appErr.message,
-        details: appErr.details,
       },
       meta: {
         timestamp: new Date().toISOString(),

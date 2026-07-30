@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/Card';
 import type { Survey } from '@midnight-survey/shared';
-import { Eye, Edit, BarChart3, Globe, Lock, ArrowLeft } from 'lucide-react';
+import { Edit, Globe, ArrowLeft } from 'lucide-react';
 
 export default function SurveyView() {
   const { id } = useParams<{ id: string }>();
@@ -14,11 +14,19 @@ export default function SurveyView() {
   useEffect(() => {
     fetch(`/api/v1/surveys/${id}`)
       .then(r => r.json())
-      .then(d => { setSurvey(d.data); setLoading(false); })
+      .then(d => {
+        setSurvey(d.data);
+        setLoading(false);
+      })
       .catch(() => setLoading(false));
   }, [id]);
 
-  if (loading) return <div className="flex justify-center py-20"><div className="animate-spin h-8 w-8 border-4 border-primary-500 border-t-transparent rounded-full" /></div>;
+  if (loading)
+    return (
+      <div className="flex justify-center py-20">
+        <div className="animate-spin h-8 w-8 border-4 border-primary-500 border-t-transparent rounded-full" />
+      </div>
+    );
   if (!survey) return <div className="text-center py-20 text-gray-500">Survey not found</div>;
 
   const statusColors: Record<string, string> = {
@@ -30,7 +38,10 @@ export default function SurveyView() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
-      <button onClick={() => navigate('/')} className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900">
+      <button
+        onClick={() => navigate('/')}
+        className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900"
+      >
         <ArrowLeft className="h-4 w-4" /> Back to Dashboard
       </button>
 
@@ -47,10 +58,14 @@ export default function SurveyView() {
               {survey.description && <CardDescription className="mt-2">{survey.description}</CardDescription>}
             </div>
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={() => {
-                const surveyUrl = `${window.location.origin}/survey/${survey.id}/take`;
-                navigator.clipboard.writeText(surveyUrl);
-              }}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const surveyUrl = `${window.location.origin}/survey/${survey.id}/take`;
+                  navigator.clipboard.writeText(surveyUrl);
+                }}
+              >
                 <Globe className="h-4 w-4 mr-1" /> Share
               </Button>
               {survey.status === 'draft' && (

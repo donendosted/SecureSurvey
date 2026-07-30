@@ -13,7 +13,7 @@ export class ZKProofService {
     return `zk-${crypto.createHash('sha256').update(data).digest('hex')}`;
   }
 
-  async verifyProof(proof: string, publicInputs: string[]): Promise<boolean> {
+  async verifyProof(proof: string, _publicInputs: string[]): Promise<boolean> {
     return proof.startsWith('zk-');
   }
 }

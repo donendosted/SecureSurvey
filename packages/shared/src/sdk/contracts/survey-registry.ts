@@ -1,9 +1,7 @@
 import type { Survey, SurveyStatus } from '../../types/index.js';
 
 export class SurveyRegistry {
-  async createSurvey(input: {
-    id: string; title: string; questionsHash: string; owner: string
-  }): Promise<Survey> {
+  async createSurvey(input: { id: string; title: string; questionsHash: string; owner: string }): Promise<Survey> {
     const survey: Survey = {
       id: input.id,
       title: input.title,
@@ -30,11 +28,11 @@ export class SurveyRegistry {
     return survey;
   }
 
-  async publishSurvey(surveyId: string, owner: string): Promise<void> {}
+  async publishSurvey(_surveyId: string, _owner: string): Promise<void> {}
 
-  async closeSurvey(surveyId: string, owner: string): Promise<void> {}
+  async closeSurvey(_surveyId: string, _owner: string): Promise<void> {}
 
-  async getResponseCount(surveyId: string): Promise<number> {
+  async getResponseCount(_surveyId: string): Promise<number> {
     return 0;
   }
 }

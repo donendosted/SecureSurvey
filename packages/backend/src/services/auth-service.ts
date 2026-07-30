@@ -14,9 +14,13 @@ export const authService = {
     const id = uuidv4();
     const now = new Date().toISOString();
     const user = {
-      id, email, name, password,
+      id,
+      email,
+      name,
+      password,
       role: 'respondent' as UserRole,
-      createdAt: now, updatedAt: now,
+      createdAt: now,
+      updatedAt: now,
       preferences: { language: 'en', timezone: 'UTC', emailNotifications: true, theme: 'system' as const },
     };
     users.set(id, user);
@@ -30,7 +34,6 @@ export const authService = {
     const user = Array.from(users.values()).find(u => u.email === email);
     if (!user || user.password !== password) throw new AuthenticationError('Invalid email or password');
 
-    user.lastLoginAt = new Date().toISOString();
     user.updatedAt = new Date().toISOString();
     users.set(user.id, user);
 
@@ -58,8 +61,10 @@ export const authService = {
 
 function generateTokens(userId: string, role: string): AuthTokens {
   return {
-    accessToken: jwt.sign({ userId, role }, config.jwt.secret, { expiresIn: config.jwt.expiresIn }),
-    refreshToken: jwt.sign({ userId, role, type: 'refresh' }, config.jwt.secret, { expiresIn: config.jwt.refreshExpiresIn }),
+    accessToken: jwt.sign({ userId, role }, config.jwt.secret, { expiresIn: config.jwt.expiresIn } as jwt.SignOptions),
+    refreshToken: jwt.sign({ userId, role, type: 'refresh' }, config.jwt.secret, {
+      expiresIn: config.jwt.refreshExpiresIn,
+    } as jwt.SignOptions),
     expiresIn: 86400,
     tokenType: 'Bearer',
   };

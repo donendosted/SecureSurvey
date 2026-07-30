@@ -10,3 +10,5 @@ coverage/
 debug/
 *.tsbuildinfo
 .next/
+*.d.ts
+*.js
