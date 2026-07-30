@@ -4,7 +4,7 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '../components/ui/Card';
 import { Plus, Trash2, GripVertical, ChevronDown } from 'lucide-react';
-import type { QuestionType, Question } from '@midnight-survey/shared-types';
+import type { QuestionType, Question } from '@midnight-survey/shared';
 
 interface QuestionForm {
   type: QuestionType;

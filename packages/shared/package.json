@@ -1,7 +1,7 @@
 {
-  "name": "@midnight-survey/shared-types",
+  "name": "@midnight-survey/shared",
   "version": "1.0.0",
-  "description": "Shared TypeScript types for Midnight Survey DApp",
+  "description": "Shared types, SDK, and utilities for Midnight Survey DApp",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
@@ -9,6 +9,14 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.js"
+    },
+    "./types": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/types/index.js"
+    },
+    "./sdk": {
+      "types": "./dist/sdk/index.d.ts",
+      "import": "./dist/sdk/index.js"
     }
   },
   "scripts": {
@@ -16,15 +24,11 @@
     "dev": "tsc --watch",
     "clean": "rm -rf dist",
     "lint": "eslint src --ext .ts",
-    "lint:fix": "eslint src --ext .ts --fix",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "test:unit": "vitest run --reporter=verbose"
+    "test": "vitest run"
   },
   "dependencies": {
-    "zod": "^3.22.4",
-    "zod-to-json-schema": "^3.22.5"
+    "zod": "^3.22.4"
   },
   "devDependencies": {
     "@types/node": "^20.11.0",

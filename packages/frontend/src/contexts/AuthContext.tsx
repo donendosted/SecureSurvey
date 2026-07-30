@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
-import type { User, AuthTokens } from '@midnight-survey/shared-types';
+import type { User, AuthTokens } from '@midnight-survey/shared';
 
 interface AuthState {
   user: User | null;

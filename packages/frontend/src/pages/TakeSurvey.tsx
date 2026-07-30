@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/Card';
 import { Shield, CheckCircle } from 'lucide-react';
-import type { Survey, QuestionType } from '@midnight-survey/shared-types';
+import type { Survey, QuestionType } from '@midnight-survey/shared';
 
 export default function TakeSurvey() {
   const { id } = useParams<{ id: string }>();

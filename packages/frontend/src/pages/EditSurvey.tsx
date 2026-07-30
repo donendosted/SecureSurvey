@@ -4,7 +4,7 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
 import { Plus, Trash2, GripVertical } from 'lucide-react';
-import type { Survey, QuestionType } from '@midnight-survey/shared-types';
+import type { Survey, QuestionType } from '@midnight-survey/shared';
 
 export default function EditSurvey() {
   const { id } = useParams<{ id: string }>();

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/Card';
-import type { Survey } from '@midnight-survey/shared-types';
+import type { Survey } from '@midnight-survey/shared';
 import { Eye, Edit, BarChart3, Globe, Lock, ArrowLeft } from 'lucide-react';
 
 export default function SurveyView() {

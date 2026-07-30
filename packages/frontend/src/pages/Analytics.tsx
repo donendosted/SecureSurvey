@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { BarChart3, TrendingUp, Users, Clock, ThumbsUp, Shield } from 'lucide-react';
-import type { SurveyAnalytics } from '@midnight-survey/shared-types';
+import type { SurveyAnalytics } from '@midnight-survey/shared';
 
 export default function Analytics() {
   const { id } = useParams<{ id: string }>();

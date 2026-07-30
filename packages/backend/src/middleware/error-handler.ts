@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import type { AppError } from '@midnight-survey/shared-types';
+import type { AppError } from '@midnight-survey/shared';
 import { v4 as uuidv4 } from 'uuid';
 
 export function errorHandler(err: Error, _req: Request, res: Response, _next: NextFunction): void {

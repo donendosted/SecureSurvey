@@ -5,19 +5,12 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc && bash compile.sh",
+    "build": "tsc",
     "dev": "tsc --watch",
-    "clean": "rm -rf dist circuits",
-    "compile": "bash compile.sh",
+    "clean": "rm -rf dist",
     "lint": "eslint src --ext .ts",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "test:unit": "vitest run src/**/*.test.ts",
-    "test:integration": "vitest run tests/**/*.test.ts",
-    "deploy:devnet": "ts-node scripts/deploy.ts --network devnet",
-    "deploy:testnet": "ts-node scripts/deploy.ts --network testnet",
-    "deploy:mainnet": "ts-node scripts/deploy.ts --network mainnet"
+    "test": "vitest run"
   },
   "dependencies": {
     "@midnight-ntwrk/compact-runtime": "^0.6.0",
@@ -25,12 +18,10 @@
     "@midnight-ntwrk/midnight-js-network-id": "^0.6.0",
     "@midnight-ntwrk/midnight-js-types": "^0.6.0",
     "@midnight-ntwrk/midnight-js-wallet-api": "^0.6.0",
-    "@midnight-survey/shared-types": "workspace:*",
-    "zod": "^3.22.4"
+    "@midnight-survey/shared": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^20.11.0",
-    "ts-node": "^10.9.2",
     "typescript": "^5.3.3",
     "vitest": "^1.3.0"
   }
