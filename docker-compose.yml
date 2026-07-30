@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: backend
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - MIDNIGHT_NETWORK=${MIDNIGHT_NETWORK:-testnet}
+      - MIDNIGHT_NODE_URL=${MIDNIGHT_NODE_URL:-https://rpc.devnet.midnight.network}
+      - JWT_SECRET=${JWT_SECRET:-docker-secret-change-me}
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY:-docker-encryption-key-32-chars}
+    volumes:
+      - survey-data:/app/data
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3001/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    environment:
+      - VITE_API_URL=http://localhost:3001
+
+  # Local development services
+  midnight-node:
+    image: midnightnetwork/midnight-node:latest
+    ports:
+      - "9944:9944"
+    environment:
+      - MIDNIGHT_NODE_NAME=survey-dapp-dev
+      - MIDNIGHT_NODE_ROLE=validator
+    volumes:
+      - midnight-data:/data
+
+volumes:
+  survey-data:
+  midnight-data:
